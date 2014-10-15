@@ -1,3 +1,4 @@
+#include <iostream>
 #include <iterator>
 #include <regex>
 #include <string>
@@ -41,18 +42,17 @@ const cs_sym_t **search(const cs_db_t *db, const char *match, int *n_found)
 
     auto d = reinterpret_cast<const db_t*>(db);
     std::vector<const cs_sym_t *> matches;
-    std::regex re(match);
 
-    for (auto itr=d->hash.begin(); itr!=d->hash.end(); ++itr)
-      if (std::regex_match((*itr).second->name, re))
-        matches.push_back((*itr).second);
-#if 0
-    auto itrs = reinterpret_cast<const db_t*>(db)->hash.equal_range(match);
-    auto itr = itrs.first;
-    auto n = std::distance(itrs.first, itrs.second);
-    for (int i=0; i<n; ++i)
-      rslt[i] = (itr++)->second;
-#endif
+    try {
+        std::regex re(match);
+        for (auto itr=d->hash.begin(); itr!=d->hash.end(); ++itr)
+          if (std::regex_match((*itr).second->name, re))
+            matches.push_back((*itr).second);
+    }
+    catch (const std::regex_error &err) {
+        std::cerr << "Search error: " << err.what() << std::endl;
+    }
+
     auto rslt = new const cs_sym_t *[matches.size()];
     for (int i=0; i<matches.size(); ++i)
       rslt[i] = matches[i];
