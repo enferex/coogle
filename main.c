@@ -252,17 +252,29 @@ static void file_load_symbols(cs_file_t *file, pos_t *pos)
             if (strlen(line) == 0)
               break;
 
-            sym = new_sym();
             c = line;
 
             /* Skip whitespace */
             while (isspace(*c))
               ++c;
+
+            /* Skip lines only containing mark characters */
+            if (is_mark(c[0]) && strlen(c+1) == 0)
+              continue;
+
+            sym = new_sym();
             if (is_mark(c[0]))
             {
                 sym->mark = c[0];
                 ++c;
             }
+
+            if (strlen(c) == 0)
+            {
+                free(sym);
+                continue;
+            }
+
             sym->line = lineno;
             sym->name = strdup(c);
             sym->file = file;
